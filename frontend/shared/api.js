@@ -240,6 +240,11 @@
     }
   };
 
+  // ── Módulo: Planes ─────────────────────────────────────────────────────────
+  var planes = {
+    listarActivos: function () { return request('GET', '/planes'); }
+  };
+
   // ── Módulo: Becas ───────────────────────────────────────────────────────────
   var becas = {
     listar:            function ()          { return request('GET',    '/becas'); },
@@ -292,7 +297,20 @@
 
   // ── Módulo: Grupos ──────────────────────────────────────────────────────────
   var grupos = {
-    listar:     function (nivel)       { return request('GET',  '/grupos' + (nivel ? '?nivel=' + nivel : '')); },
+    listar:     function (filtros) {
+      if (typeof filtros === 'string') {
+        return request('GET', '/grupos?nivel=' + filtros);
+      }
+      var qs = '';
+      if (filtros) {
+        var params = new URLSearchParams();
+        if (filtros.nivel) params.set('nivel', filtros.nivel);
+        if (filtros.cicloId) params.set('cicloId', filtros.cicloId);
+        if (filtros.todos) params.set('todos', 'true');
+        qs = '?' + params.toString();
+      }
+      return request('GET', '/grupos' + qs);
+    },
     obtener:    function (id)          { return request('GET',  '/grupos/' + id); },
     crear:      function (datos)       { return request('POST', '/grupos', datos); },
     actualizar: function (id, datos)   { return request('PUT',  '/grupos/' + id, datos); },
@@ -522,7 +540,7 @@
     auth: auth, alumnos: alumnos, tutores: tutores, pagos: pagos, becas: becas,
     calificaciones: calificaciones, calificacionesExtra: calificacionesExtra, calificacionesTaller: calificacionesTaller, grupos: grupos, usuarios: usuarios,
     bitacora: bitacora, permisos: permisos, configuracion: configuracion,
-    reportes: reportes,
+    reportes: reportes, planes: planes,
     // Fetch directo
     fetchApi: fetchApi,
     // Mappers

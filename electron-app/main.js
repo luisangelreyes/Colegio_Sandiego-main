@@ -1,29 +1,27 @@
-const { app, BrowserWindow, Menu } = require('electron');
+const { app, BrowserWindow } = require('electron');
 const path = require('path');
 
 let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
+    width: 1280,
     height: 800,
-    show: false, // Ocultar hasta que cargue para evitar parpadeos
+    show: false,
+    autoHideMenuBar: true,
     webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false
+      nodeIntegration: false,
+      contextIsolation: true
     }
   });
-
-  // Ocultar el menú superior (Archivo, Editar, etc) para que parezca una app nativa
-  Menu.setApplicationMenu(null);
-
-  // Cargar la pantalla de inicio local donde se pide la IP del servidor
-  mainWindow.loadFile('index.html');
 
   mainWindow.once('ready-to-show', () => {
     mainWindow.maximize();
     mainWindow.show();
   });
+
+  // Cargar la pantalla de selección de IP del host
+  mainWindow.loadFile(path.join(__dirname, 'index.html'));
 }
 
 app.whenReady().then(() => {

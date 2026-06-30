@@ -15,8 +15,7 @@ async function startServer() {
   try {
     // Verificar conexión a la DB antes de levantar el servidor
     await prisma.$connect();
-    console.log('[DB] Conexión a PostgreSQL establecida correctamente.');
-
+    
     const server = app.listen(config.port, config.host, () => {
       console.log('');
       console.log('╔══════════════════════════════════════════════╗');
