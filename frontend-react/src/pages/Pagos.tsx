@@ -26,6 +26,7 @@ export function Pagos() {
   const [selectedDeudas, setSelectedDeudas] = useState<any[]>([]);
   const [porcentajeBeca, setPorcentajeBeca] = useState(0);
   const [calculando, setCalculando] = useState(false);
+  const [tieneCalendario, setTieneCalendario] = useState(false);
   
   const [pagoForm, setPagoForm] = useState({
     concepto: 'Colegiatura',
@@ -39,6 +40,7 @@ export function Pagos() {
   
   const [saving, setSaving] = useState(false);
   const [ticketRecibo, setTicketRecibo] = useState<any>(null);
+  const alumnoTienePlan = Boolean(alumnoSeleccionado?.planPago || tieneCalendario);
 
   const imprimirTicket = () => {
     const contenido = document.getElementById('ticket-imprimible')?.innerHTML;
@@ -87,7 +89,8 @@ export function Pagos() {
     if (alId) {
       alumnosService.getAlumnoById(Number(alId)).then((res: any) => {
         setIsModalOpen(true);
-        seleccionarAlumno(res.data || res);
+        const alumno = res.data?.data || res.data || res;
+        seleccionarAlumno(alumno);
       });
     }
   }, [page]);
@@ -138,7 +141,7 @@ export function Pagos() {
     const id = al.id || al.alumnoId;
     try {
       const alRes: any = await alumnosService.getAlumnoById(id);
-      const alumnoData = alRes.data || alRes;
+      const alumnoData = alRes.data?.data || alRes.data || alRes;
       setAlumnoSeleccionado(alumnoData);
       
       let pctBeca = 0;
@@ -148,9 +151,14 @@ export function Pagos() {
       setPorcentajeBeca(pctBeca);
       
       const adRes: any = await pagosService.obtenerCalendario(id);
-      const data = adRes.data?.data || adRes.data || [];
+      let data = [];
+      if (Array.isArray(adRes)) data = adRes;
+      else if (Array.isArray(adRes.data)) data = adRes.data;
+      else if (Array.isArray(adRes.data?.data)) data = adRes.data.data;
+      
       const pendientes = data.filter((a: any) => a.estadoCobro === 'pendiente');
       
+      setTieneCalendario(data.length > 0);
       setAdeudos(pendientes);
       setSelectedDeudas([]);
       setPagoForm(prev => ({
@@ -170,6 +178,7 @@ export function Pagos() {
     setBusquedaAlumno('');
     setAdeudos([]);
     setSelectedDeudas([]);
+    setTieneCalendario(false);
     setPagoForm({ concepto: 'Colegiatura', monto: '', metodoPago: 'transferencia', fecha: new Date().toISOString().split('T')[0] });
     setComprobante(null);
     setPagoAdelantado(false);
@@ -483,7 +492,7 @@ export function Pagos() {
                     </div>
                   
                     <div className="space-y-5">
-                      {alumnoSeleccionado && !alumnoSeleccionado.planPago ? (
+                      {alumnoSeleccionado && !alumnoTienePlan ? (
                         <div className="bg-orange-50 border border-orange-200 p-6 rounded-xl text-center">
                           <h4 className="text-orange-800 font-bold mb-2">Sin plan de pagos</h4>
                           <p className="text-orange-700 text-sm mb-4">Este alumno no tiene un plan de pagos asignado. No es posible registrar pagos hasta asignarle uno.</p>
@@ -596,7 +605,7 @@ export function Pagos() {
     
                   <div className="pt-6 mt-6 flex justify-end gap-3 border-t border-gray-100 relative z-0">
                   <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors">Cancelar</button>
-                  <button type="submit" disabled={saving || !alumnoSeleccionado || !alumnoSeleccionado.planPago} className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-sm disabled:opacity-70">
+                  <button type="submit" disabled={saving || !alumnoSeleccionado || !alumnoTienePlan} className="flex items-center gap-2 px-6 py-2.5 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-sm disabled:opacity-70">
                     <CheckCircle2 size={16} /> {saving ? 'Registrando...' : 'Registrar Pago'}
                   </button>
                 </div>

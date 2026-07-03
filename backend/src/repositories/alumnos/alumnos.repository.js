@@ -1,3 +1,4 @@
+
 const { withAudit } = require('../../utils/audit.utils');
 /**
  * SAE — Alumnos Repository (PostgreSQL)
@@ -109,8 +110,8 @@ function mapAlumno(a) {
     cicloActual: inscripcionActual?.ciclo ?? null,
     estadoPago:  inscripcionActual?.estadoFinanciero ?? null,
     mesesAdeudo: inscripcionActual?.mesesAdeudo ?? 0,
-    planPago:    inscripcionActual?.planDepago ?? null,
-    beca:        a.asignacionesBeca?.length > 0 ? a.asignacionesBeca[0].beca : null,
+    planPago:    inscripcionActual?.planDepago ?? (inscripcionActual?.planPago ? { nombre: `Plan ${inscripcionActual.planPago.replace('_', ' ')}` } : null),
+    beca:        a.asignacionesBeca?.[0]?.beca ?? null,
     materiasExtra: (a.inscripcionesMateria ?? []).map(im => ({
       id:      im.grupoMateria.grupoMateriaId,
       materia: im.grupoMateria.materia?.nombre ?? null,

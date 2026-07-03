@@ -119,8 +119,15 @@ async function asignarPlan(alumnoId, meses, usuarioId) {
 
     const alumno = await tx.alumno.findUnique({ where: { alumnoId: Number(alumnoId) } });
 
-    // Vamos a usar planPago (el string) por simplicidad, dado el esquema (default "10_meses")
     const planString = meses === 12 ? '12_meses' : '10_meses';
+    const planCatalogo = await tx.planPago.findFirst({
+      where: {
+        cicloId: ciclo.cicloId,
+        meses,
+        activo: true,
+        eliminadoEn: null,
+      },
+    });
 
     if (!inscripcion) {
       throw Object.assign(new Error('El alumno no tiene una inscripción activa en este ciclo. Asigne un grupo primero.'), { statusCode: 400 });
@@ -136,7 +143,10 @@ async function asignarPlan(alumnoId, meses, usuarioId) {
 
       inscripcion = await tx.inscripcionCiclo.update({
         where: { inscripcionId: inscripcion.inscripcionId },
-        data: { planPago: planString }
+        data: {
+          planPago: planString,
+          planPagoId: planCatalogo?.planPagoId ?? null,
+        }
       });
     }
 
